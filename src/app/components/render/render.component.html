@@ -1,0 +1,5 @@
+<div class="row" *ngFor="let x of map; let indexX = index">
+    <div class="item" *ngFor="let y of x; let indexY = index" (mouseenter)="hover(indexX, indexY)" (mouseenter)="hover(indexX, indexY)" [style.background-color]="y.color">
+        {{ 0 }}
+    </div>
+</div>
