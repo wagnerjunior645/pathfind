@@ -14,9 +14,11 @@ export class RenderComponent implements OnInit {
   }
 
   hover(x: number, y: number): void {
-    console.log("🚀 ~ file: render.component.ts ~ line 17 ~ RenderComponent ~ hover ~ y", y)
-    console.log("🚀 ~ file: render.component.ts ~ line 17 ~ RenderComponent ~ hover ~ x", x)
     this.map[x][y] = { color: 'red' };
+  }
+
+  mark(): void {
+    x: number, y: number
   }
 
   private calculeScreen(): { height: number; width: number } {
