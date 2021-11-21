@@ -1,10 +1,12 @@
 <div class="row" *ngFor="let x of map; let indexX = index">
   <div
     class="item"
-    *ngFor="let y of x; let indexY = index"
-    (mouseenter)="hover(indexX, indexY)"
-    (mouseenter)="hover(indexX, indexY)"
-    (click)="mark(x, y)"
-    [style.background-color]="y.color"
-  ></div>
+    *ngFor="let node of x; let indexY = index"
+    (click)="handleNodeItem(node)"
+    [ngClass]="node.label"
+  ><p></p></div>
+</div>
+
+<div class="execute">
+  <a (click)="run()">RUN</a>
 </div>
