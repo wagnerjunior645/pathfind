@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Node } from 'src/app/class/node.class';
 
 @Component({
   selector: 'app-render',
@@ -6,19 +7,20 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./render.component.scss'],
 })
 export class RenderComponent implements OnInit {
-  map: any[][] = [];
+  map: Node[][] = [];
   constructor() {}
 
   ngOnInit(): void {
     this.generateMap();
+    this.setDefaultPlayerAndFoodLocation();
   }
 
   hover(x: number, y: number): void {
-    this.map[x][y] = { color: 'red' };
+    this.map[x][y].label = 'wall';
   }
 
   mark(): void {
-    x: number, y: number
+    // x: number, y: number
   }
 
   private calculeScreen(): { height: number; width: number } {
@@ -47,10 +49,33 @@ export class RenderComponent implements OnInit {
     for (let i = 0; i < x; i++) {
       const temp = [];
       for (let j = 0; j < y; j++) {
-        temp.push({color: 'white'});
+        temp.push(new Node('ground', x, y));
       }
       this.map.push(temp);
     }
     console.log(this.map);
   }
+
+  run(): void {
+
+  }
+
+  handleNodeItem(node: Node): void {
+
+  }
+
+  private setDefaultPlayerAndFoodLocation(): void {
+    const midle = Math.round(this.map[0].length / 2);
+    this.map[0][0].label = 'player';
+    this.map[midle][midle].label = 'food';
+  }
+}
+
+function calculateDistanceBetweenNeighborAndFood(input: {
+  nX: number,
+  nY: number,
+  fX: number,
+  fY: number,
+}): number {
+  return (Math.abs(input.nX - input.fX) + Math.abs(input.nY - input.fY) * 10 );
 }

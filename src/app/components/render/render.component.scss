@@ -2,12 +2,28 @@
     display: flex;
     .item {
         flex: 1;
-        outline: solid 1px red;
+        outline: solid 1px #cecece;
         width: 25px;
         height: 25px;
         padding: 2px;
         display: flex;
         align-self: center;
         justify-content: center;
+    }
+}
+
+.execute {
+    position: fixed;
+    bottom: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+    a {
+        cursor: pointer;
+        background-color: #9543e2;
+        color: #fff;
+        padding: 3px 7px;
+        &:hover {
+            background-color: #8b28e7;
+        }
     }
 }

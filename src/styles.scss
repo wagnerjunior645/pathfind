@@ -1,1 +1,24 @@
 /* You can add global styles to this file, and also import other style files */
+.wall {
+    background-color: dimgrey;
+}
+
+.player {
+    background-color: green;
+}
+
+.food {
+    background-color: red;
+}
+
+.ground {
+    background-color: #fff;
+}
+
+.visited {
+    background-color: #17a3a3;
+}
+
+.open {
+    background-color: gold;
+}
