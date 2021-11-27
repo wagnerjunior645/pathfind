@@ -1,3 +1,6 @@
+import { Label } from "../types/label.type";
+import { State } from "../types/state.type";
+
 export class Node {
     x: number;
     y: number;
@@ -34,6 +37,3 @@ export class Node {
         return this.g! + this.h!;
     }
 }
-
-type Label = 'wall' | 'player' | 'food' | 'ground' | 'visited' | 'open';
-type State = 'visited' | 'open' | 'notVisited';
