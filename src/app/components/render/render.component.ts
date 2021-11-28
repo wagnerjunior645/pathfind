@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { interval, Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 import { Node } from 'src/app/class/node.class';
+import { Label } from 'src/app/types/label.type';
 
 @Component({
   selector: 'app-render',
@@ -7,8 +10,15 @@ import { Node } from 'src/app/class/node.class';
   styleUrls: ['./render.component.scss'],
 })
 export class RenderComponent implements OnInit {
+  private initClick = false;
+  private label: Label | null = null;
+  private openList: Node[] = [];
+  private stop = new Subject<void>();
+  private food: Node | undefined;
+  private player: Node | undefined;
+
   map: Node[][] = [];
-  constructor() {}
+  constructor() { }
 
   ngOnInit(): void {
     this.generateMap();
@@ -42,26 +52,95 @@ export class RenderComponent implements OnInit {
   private generateMap(): void {
     console.log(this.map);
     const { width, height } = this.calculeScreen();
-    console.log("🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ height", height)
-    console.log("🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ width", width)
-    const x = width / 35;
-    const y = height / 25;
+    console.log(
+      '🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ height',
+      height
+    );
+    console.log(
+      '🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ width',
+      width
+    );
+    const x = Math.round(width / 35);
+    const y = Math.round(height / 25);
     for (let i = 0; i < x; i++) {
       const temp = [];
       for (let j = 0; j < y; j++) {
-        temp.push(new Node('ground', x, y));
+        temp.push(new Node('ground', i, j));
       }
       this.map.push(temp);
     }
-    console.log(this.map);
   }
 
   run(): void {
+    this.generateAdjacents();
+    interval(1000)
+      .pipe(takeUntil(this.stop))
+      .subscribe(() => {
 
+      });
   }
 
   handleNodeItem(node: Node): void {
+    this.placeGroundAndWall(node);
+  }
 
+  handleInitClick(node: Node): void {
+    this.initClick = true;
+    this.label = node.label;
+    this.placeGroundAndWall(node);
+  }
+
+  handleFinishClick(): void {
+    this.initClick = false;
+    this.label = null;
+  }
+
+  handleMouseIterate(node: Node): void {
+    if (this.initClick) {
+      this.handleNodeItem(node);
+      this.placeFoodAndPlayer(node);
+    }
+  }
+
+  private generateAdjacents(isDiagonal?: boolean): void {
+    if (!isDiagonal) {
+      for (let x = 0; x < this.map.length; x++) {
+        for (let y = 0; y < this.map[0].length; y++) {
+          const node = this.map[x][y];
+          if (node.label !== 'wall') {
+            const filteredNodes = [
+              this.map[x]?.[y + 1],
+              this.map[x]?.[y - 1],
+              this.map[x + 1]?.[y],
+              this.map[x - 1]?.[y],
+            ]
+              .filter(node => node !== undefined)
+              .filter(node => node.label !== 'wall');
+            node.adjacent = filteredNodes;
+          }
+        }
+      }
+    }
+  }
+
+  private placeFoodAndPlayer(node: Node): void {
+    if (this.label === 'food' || this.label === 'player') {
+      for (let x = 0; x < this.map.length; x++) {
+        for (let y = 0; y < this.map[0].length; y++) {
+          console.log(this.map[x][y]);
+          if (this.map[x][y].label === this.label) {
+            this.map[x][y].label = 'ground';
+          }
+        }
+      }
+      node.label = this.label;
+    }
+  }
+
+  private placeGroundAndWall(node: Node): void {
+    if (this.label && this.label !== 'player' && this.label !== 'food') {
+      node.label = this.label === 'ground' ? 'wall' : 'ground';
+    }
   }
 
   private setDefaultPlayerAndFoodLocation(): void {
@@ -72,10 +151,10 @@ export class RenderComponent implements OnInit {
 }
 
 function calculateDistanceBetweenNeighborAndFood(input: {
-  nX: number,
-  nY: number,
-  fX: number,
-  fY: number,
+  nX: number;
+  nY: number;
+  fX: number;
+  fY: number;
 }): number {
-  return (Math.abs(input.nX - input.fX) + Math.abs(input.nY - input.fY) * 10 );
+  return Math.abs(input.nX - input.fX) + Math.abs(input.nY - input.fY) * 10;
 }

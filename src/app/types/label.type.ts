@@ -1,0 +1,1 @@
+export type Label = 'wall' | 'player' | 'food' | 'ground' | 'visited' | 'open';

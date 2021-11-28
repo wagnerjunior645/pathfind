@@ -2,9 +2,12 @@
   <div
     class="item"
     *ngFor="let node of x; let indexY = index"
-    (click)="handleNodeItem(node)"
     [ngClass]="node.label"
-  ><p></p></div>
+    (mousedown)="handleInitClick(node)"
+    (mouseup)="handleFinishClick()"
+    (mouseover)="handleMouseIterate(node)"
+    draggable="false"
+  ></div>
 </div>
 
 <div class="execute">
