@@ -1,1 +1,1 @@
-export type State = 'visited' | 'open' | 'notVisited';
+export type State = 'visited' | 'open' | 'notVisited' | 'finalPath';

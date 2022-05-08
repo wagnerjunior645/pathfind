@@ -25,5 +25,8 @@
         &:hover {
             background-color: #8b28e7;
         }
+        ~ a {
+            margin-left: 5px;
+        }
     }
 }

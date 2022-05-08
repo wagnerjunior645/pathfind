@@ -10,6 +10,11 @@ import { Label } from 'src/app/types/label.type';
   styleUrls: ['./render.component.scss'],
 })
 export class RenderComponent implements OnInit {
+  map: Node[][] = [];
+  isRuning = false;
+  isPaused = false;
+  isResume = false;
+
   private initClick = false;
   private label: Label | null = null;
   private openList: Node[] = [];
@@ -17,20 +22,20 @@ export class RenderComponent implements OnInit {
   private food: Node | undefined;
   private player: Node | undefined;
 
-  map: Node[][] = [];
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
+    this.init();
+  }
+
+  init(): void {
+    this.clearDataBelforeRun();
     this.generateMap();
     this.setDefaultPlayerAndFoodLocation();
   }
 
   hover(x: number, y: number): void {
     this.map[x][y].label = 'wall';
-  }
-
-  mark(): void {
-    // x: number, y: number
   }
 
   private calculeScreen(): { height: number; width: number } {
@@ -49,17 +54,16 @@ export class RenderComponent implements OnInit {
     };
   }
 
+  private clearDataBelforeRun(): void {
+    this.map = [];
+    this.openList = [];
+    this.isPaused = false;
+    this.isRuning = false;
+    this.isResume = false;
+  }
+
   private generateMap(): void {
-    console.log(this.map);
     const { width, height } = this.calculeScreen();
-    console.log(
-      '🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ height',
-      height
-    );
-    console.log(
-      '🚀 ~ file: render.component.ts ~ line 35 ~ RenderComponent ~ generateMap ~ width',
-      width
-    );
     const x = Math.round(width / 35);
     const y = Math.round(height / 25);
     for (let i = 0; i < x; i++) {
@@ -71,12 +75,71 @@ export class RenderComponent implements OnInit {
     }
   }
 
+  reload(): void {
+    this.init();
+  }
+
+  resume(): void {
+    this.isResume = true;
+    this.run();
+  }
+
+  pause(): void {
+    this.isPaused = true;
+    this.endOrPauseRun();
+  }
+
   run(): void {
-    this.generateAdjacents();
-    interval(1000)
+    this.isRuning = true;
+
+    if (!this.isPaused) {
+      this.generateAdjacents();
+      this.findPlayerAndFoodAndSet();
+      this.generateHCost();
+
+      this.player!.state = 'visited';
+      this.openList.push(this.player!);
+      this.player!.g = 0;
+    }
+
+    this.initOrResumeFind();
+  }
+
+  private initOrResumeFind(): void {
+    interval(10)
       .pipe(takeUntil(this.stop))
       .subscribe(() => {
-
+        const food = this.openList.find((node) => node.label === 'food');
+        if (food) {
+          let node = food;
+          while (node.parent !== null) {
+            node = node.parent;
+            node.state = 'finalPath';
+          }
+          this.endOrPauseRun();
+        }
+        const topNode = this.openList.pop();
+        if (!topNode) {
+          this.endOrPauseRun();
+          alert('Não tem como achar xD');
+          return;
+        }
+        topNode.state = 'visited';
+        topNode.adjacents.forEach((node) => {
+          if (node.g === null || topNode.g! + 10 < node.g) {
+            node.g = topNode.g! + 10;
+            node.parent = topNode;
+            if (node.state === 'notVisited') {
+              node.state = 'open';
+              this.openList.push(node);
+            } else {
+              node.state = 'open';
+            }
+          }
+        });
+        this.openList = this.openList
+          .sort((nodeA, nodeB) => nodeA.totalCost - nodeB.totalCost)
+          .reverse();
       });
   }
 
@@ -102,6 +165,20 @@ export class RenderComponent implements OnInit {
     }
   }
 
+  private generateHCost(): void {
+    const food = this.food!;
+    for (let x = 0; x < this.map.length; x++) {
+      for (let y = 0; y < this.map[0].length; y++) {
+        const currentNode = this.map[x][y];
+        const hCost =
+          (Math.abs(currentNode.x - food.x) +
+            Math.abs(currentNode.y - food.y)) *
+          10;
+        currentNode.h = hCost;
+      }
+    }
+  }
+
   private generateAdjacents(isDiagonal?: boolean): void {
     if (!isDiagonal) {
       for (let x = 0; x < this.map.length; x++) {
@@ -114,9 +191,9 @@ export class RenderComponent implements OnInit {
               this.map[x + 1]?.[y],
               this.map[x - 1]?.[y],
             ]
-              .filter(node => node !== undefined)
-              .filter(node => node.label !== 'wall');
-            node.adjacent = filteredNodes;
+              .filter((node) => node !== undefined)
+              .filter((node) => node.label !== 'wall');
+            node.adjacents = filteredNodes;
           }
         }
       }
@@ -127,7 +204,6 @@ export class RenderComponent implements OnInit {
     if (this.label === 'food' || this.label === 'player') {
       for (let x = 0; x < this.map.length; x++) {
         for (let y = 0; y < this.map[0].length; y++) {
-          console.log(this.map[x][y]);
           if (this.map[x][y].label === this.label) {
             this.map[x][y].label = 'ground';
           }
@@ -147,6 +223,30 @@ export class RenderComponent implements OnInit {
     const midle = Math.round(this.map[0].length / 2);
     this.map[0][0].label = 'player';
     this.map[midle][midle].label = 'food';
+  }
+
+  private findPlayerAndFoodAndSet(): void {
+    for (let x = 0; x < this.map.length; x++) {
+      for (let y = 0; y < this.map[0].length; y++) {
+        if (this.map[x][y].label === 'food') {
+          this.setFood(this.map[x][y]);
+        } else if (this.map[x][y].label === 'player') {
+          this.setPlayer(this.map[x][y]);
+        }
+      }
+    }
+  }
+
+  private setPlayer(player: Node): void {
+    this.player = player;
+  }
+
+  private setFood(food: Node): void {
+    this.food = food;
+  }
+
+  private endOrPauseRun(): void {
+    this.stop.next();
   }
 }
 

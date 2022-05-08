@@ -2,14 +2,17 @@
   <div
     class="item"
     *ngFor="let node of x; let indexY = index"
-    [ngClass]="node.label"
+    [ngClass]="node.color"
     (mousedown)="handleInitClick(node)"
     (mouseup)="handleFinishClick()"
     (mouseover)="handleMouseIterate(node)"
     draggable="false"
-  ></div>
+  >{{node.totalCost}}</div>
 </div>
 
 <div class="execute">
-  <a (click)="run()">RUN</a>
+  <a *ngIf="!isRuning" (click)="run()">RUN</a>
+  <a *ngIf="isRuning && isPaused && !isResume" (click)="resume()">Resume</a>
+  <a (click)="reload()">Reset</a>
+  <a *ngIf="isRuning && isResume" (click)="pause()">Pause</a>
 </div>

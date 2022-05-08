@@ -16,9 +16,13 @@
 }
 
 .visited {
-    background-color: #17a3a3;
+    background-color: #17a3a3!important;
 }
 
 .open {
-    background-color: gold;
+    background-color: gold!important;
+}
+
+.finalPath {
+    background-color: deeppink!important;
 }
